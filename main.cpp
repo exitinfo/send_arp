@@ -84,9 +84,7 @@ int main(int argc, char **argv)
 
     u_char ips[4];
     for(int i=0; i<4; i++)
-    {    ips[i] = inet_addr(argv[2]) >> (8 * i) & 0xff;
-        printf("%02x \n", ips[i]);
-    }
+        ips[i] = inet_addr(argv[2]) >> (8 * i) & 0xff;
     u_char ipd[4];
     for(int i=0; i<4; i++)
         ipd[i] = inet_addr(argv[3]) >> (8 * i) & 0xff;
