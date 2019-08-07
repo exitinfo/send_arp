@@ -105,7 +105,7 @@ int main(int argc, char **argv)
     memcpy(arphd.arp_smac, ifr->ifr_hwaddr.sa_data, 6);
     memcpy(arphd.arp_sip, ipm, 4);
 
-    memset(arphd.arp_dmac, 0x00, 4);
+    memset(arphd.arp_dmac, 0x00, 6);
     memcpy(arphd.arp_dip, ips, 4);
 
     memset(packet, 0 ,sizeof(packet));
